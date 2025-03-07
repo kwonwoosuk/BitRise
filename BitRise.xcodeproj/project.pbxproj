@@ -15,6 +15,7 @@
 		4D967F1F2D7B53BD00D5AFDD /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 4D967F1E2D7B53BD00D5AFDD /* Kingfisher */; };
 		4D967F222D7B53D300D5AFDD /* RxCocoa in Frameworks */ = {isa = PBXBuildFile; productRef = 4D967F212D7B53D300D5AFDD /* RxCocoa */; };
 		4D967F242D7B53D300D5AFDD /* RxSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 4D967F232D7B53D300D5AFDD /* RxSwift */; };
+		4D967F6B2D7B706D00D5AFDD /* Toast in Frameworks */ = {isa = PBXBuildFile; productRef = 4D967F6A2D7B706D00D5AFDD /* Toast */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -54,6 +55,7 @@
 				4D967F1C2D7B53A600D5AFDD /* Alamofire in Frameworks */,
 				4D967F222D7B53D300D5AFDD /* RxCocoa in Frameworks */,
 				4D967F192D7B539300D5AFDD /* RealmSwift in Frameworks */,
+				4D967F6B2D7B706D00D5AFDD /* Toast in Frameworks */,
 				4D967F162D7B536000D5AFDD /* SnapKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -105,6 +107,7 @@
 				4D967F1E2D7B53BD00D5AFDD /* Kingfisher */,
 				4D967F212D7B53D300D5AFDD /* RxCocoa */,
 				4D967F232D7B53D300D5AFDD /* RxSwift */,
+				4D967F6A2D7B706D00D5AFDD /* Toast */,
 			);
 			productName = BitRise;
 			productReference = 4D967D652D7AFD3F00D5AFDD /* BitRise.app */;
@@ -140,6 +143,7 @@
 				4D967F1A2D7B53A600D5AFDD /* XCRemoteSwiftPackageReference "Alamofire" */,
 				4D967F1D2D7B53BD00D5AFDD /* XCRemoteSwiftPackageReference "Kingfisher" */,
 				4D967F202D7B53D300D5AFDD /* XCRemoteSwiftPackageReference "RxSwift" */,
+				4D967F692D7B706D00D5AFDD /* XCRemoteSwiftPackageReference "Toast-Swift" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 4D967D662D7AFD3F00D5AFDD /* Products */;
@@ -187,7 +191,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = "권우석";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UIMainStoryboardFile = "";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -220,7 +224,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = "권우석";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UIMainStoryboardFile = Main;
+				INFOPLIST_KEY_UIMainStoryboardFile = "";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -423,6 +427,14 @@
 				minimumVersion = 6.9.0;
 			};
 		};
+		4D967F692D7B706D00D5AFDD /* XCRemoteSwiftPackageReference "Toast-Swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/scalessec/Toast-Swift.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.1.1;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -455,6 +467,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 4D967F202D7B53D300D5AFDD /* XCRemoteSwiftPackageReference "RxSwift" */;
 			productName = RxSwift;
+		};
+		4D967F6A2D7B706D00D5AFDD /* Toast */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4D967F692D7B706D00D5AFDD /* XCRemoteSwiftPackageReference "Toast-Swift" */;
+			productName = Toast;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

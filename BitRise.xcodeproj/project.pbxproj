@@ -8,11 +8,19 @@
 
 /* Begin PBXBuildFile section */
 		4D967E3B2D7B333000D5AFDD /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 4D967E3A2D7B333000D5AFDD /* .gitignore */; };
+		4D967E422D7B356100D5AFDD /* APIKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D967E412D7B356100D5AFDD /* APIKey.swift */; };
+		4D967F162D7B536000D5AFDD /* SnapKit in Frameworks */ = {isa = PBXBuildFile; productRef = 4D967F152D7B536000D5AFDD /* SnapKit */; };
+		4D967F192D7B539300D5AFDD /* RealmSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 4D967F182D7B539300D5AFDD /* RealmSwift */; };
+		4D967F1C2D7B53A600D5AFDD /* Alamofire in Frameworks */ = {isa = PBXBuildFile; productRef = 4D967F1B2D7B53A600D5AFDD /* Alamofire */; };
+		4D967F1F2D7B53BD00D5AFDD /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 4D967F1E2D7B53BD00D5AFDD /* Kingfisher */; };
+		4D967F222D7B53D300D5AFDD /* RxCocoa in Frameworks */ = {isa = PBXBuildFile; productRef = 4D967F212D7B53D300D5AFDD /* RxCocoa */; };
+		4D967F242D7B53D300D5AFDD /* RxSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 4D967F232D7B53D300D5AFDD /* RxSwift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		4D967D652D7AFD3F00D5AFDD /* BitRise.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BitRise.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4D967E3A2D7B333000D5AFDD /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
+		4D967E412D7B356100D5AFDD /* APIKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIKey.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -41,6 +49,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4D967F242D7B53D300D5AFDD /* RxSwift in Frameworks */,
+				4D967F1F2D7B53BD00D5AFDD /* Kingfisher in Frameworks */,
+				4D967F1C2D7B53A600D5AFDD /* Alamofire in Frameworks */,
+				4D967F222D7B53D300D5AFDD /* RxCocoa in Frameworks */,
+				4D967F192D7B539300D5AFDD /* RealmSwift in Frameworks */,
+				4D967F162D7B536000D5AFDD /* SnapKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -50,6 +64,7 @@
 		4D967D5C2D7AFD3F00D5AFDD = {
 			isa = PBXGroup;
 			children = (
+				4D967E412D7B356100D5AFDD /* APIKey.swift */,
 				4D967E3A2D7B333000D5AFDD /* .gitignore */,
 				4D967D672D7AFD3F00D5AFDD /* BitRise */,
 				4D967D662D7AFD3F00D5AFDD /* Products */,
@@ -84,6 +99,12 @@
 			);
 			name = BitRise;
 			packageProductDependencies = (
+				4D967F152D7B536000D5AFDD /* SnapKit */,
+				4D967F182D7B539300D5AFDD /* RealmSwift */,
+				4D967F1B2D7B53A600D5AFDD /* Alamofire */,
+				4D967F1E2D7B53BD00D5AFDD /* Kingfisher */,
+				4D967F212D7B53D300D5AFDD /* RxCocoa */,
+				4D967F232D7B53D300D5AFDD /* RxSwift */,
 			);
 			productName = BitRise;
 			productReference = 4D967D652D7AFD3F00D5AFDD /* BitRise.app */;
@@ -113,6 +134,13 @@
 			);
 			mainGroup = 4D967D5C2D7AFD3F00D5AFDD;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				4D967F142D7B536000D5AFDD /* XCRemoteSwiftPackageReference "SnapKit" */,
+				4D967F172D7B539300D5AFDD /* XCRemoteSwiftPackageReference "realm-swift" */,
+				4D967F1A2D7B53A600D5AFDD /* XCRemoteSwiftPackageReference "Alamofire" */,
+				4D967F1D2D7B53BD00D5AFDD /* XCRemoteSwiftPackageReference "Kingfisher" */,
+				4D967F202D7B53D300D5AFDD /* XCRemoteSwiftPackageReference "RxSwift" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 4D967D662D7AFD3F00D5AFDD /* Products */;
 			projectDirPath = "";
@@ -139,6 +167,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4D967E422D7B356100D5AFDD /* APIKey.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -352,6 +381,82 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		4D967F142D7B536000D5AFDD /* XCRemoteSwiftPackageReference "SnapKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SnapKit/SnapKit";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.7.1;
+			};
+		};
+		4D967F172D7B539300D5AFDD /* XCRemoteSwiftPackageReference "realm-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/realm/realm-swift.git";
+			requirement = {
+				kind = exactVersion;
+				version = 20.0.1;
+			};
+		};
+		4D967F1A2D7B53A600D5AFDD /* XCRemoteSwiftPackageReference "Alamofire" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Alamofire/Alamofire";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.10.2;
+			};
+		};
+		4D967F1D2D7B53BD00D5AFDD /* XCRemoteSwiftPackageReference "Kingfisher" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/onevcat/Kingfisher";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 8.3.0;
+			};
+		};
+		4D967F202D7B53D300D5AFDD /* XCRemoteSwiftPackageReference "RxSwift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/ReactiveX/RxSwift.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 6.9.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		4D967F152D7B536000D5AFDD /* SnapKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4D967F142D7B536000D5AFDD /* XCRemoteSwiftPackageReference "SnapKit" */;
+			productName = SnapKit;
+		};
+		4D967F182D7B539300D5AFDD /* RealmSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4D967F172D7B539300D5AFDD /* XCRemoteSwiftPackageReference "realm-swift" */;
+			productName = RealmSwift;
+		};
+		4D967F1B2D7B53A600D5AFDD /* Alamofire */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4D967F1A2D7B53A600D5AFDD /* XCRemoteSwiftPackageReference "Alamofire" */;
+			productName = Alamofire;
+		};
+		4D967F1E2D7B53BD00D5AFDD /* Kingfisher */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4D967F1D2D7B53BD00D5AFDD /* XCRemoteSwiftPackageReference "Kingfisher" */;
+			productName = Kingfisher;
+		};
+		4D967F212D7B53D300D5AFDD /* RxCocoa */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4D967F202D7B53D300D5AFDD /* XCRemoteSwiftPackageReference "RxSwift" */;
+			productName = RxCocoa;
+		};
+		4D967F232D7B53D300D5AFDD /* RxSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4D967F202D7B53D300D5AFDD /* XCRemoteSwiftPackageReference "RxSwift" */;
+			productName = RxSwift;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 4D967D5D2D7AFD3F00D5AFDD /* Project object */;
 }

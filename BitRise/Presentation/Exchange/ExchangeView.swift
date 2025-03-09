@@ -12,9 +12,9 @@ final class ExchangeView: BaseView {
     
     let headerBackgroundView = UIView()
     let coinNameLabel = UILabel()
-    let currentPriceSortButton = UIButton()
-    let changeRateSortButton = UIButton()
-    let tradePriceSortButton = UIButton()
+    let currentPriceSortButton = SortButton(title: "현재가")
+    let changeRateSortButton = SortButton(title: "전일대비")
+    let tradePriceSortButton = SortButton(title: "거래대금")
     let tableView = UITableView()
     
     override func configureHierarchy() {
@@ -70,20 +70,6 @@ final class ExchangeView: BaseView {
         coinNameLabel.font = Constants.Font.bold_12
         coinNameLabel.textAlignment = .left
         
-        currentPriceSortButton.setTitle("현재가", for: .normal)
-        currentPriceSortButton.setTitleColor(.brBlack, for: .normal)
-        currentPriceSortButton.titleLabel?.font = Constants.Font.bold_12
-        currentPriceSortButton.titleLabel?.textAlignment = .right
-        
-        changeRateSortButton.setTitle("전일대비", for: .normal)
-        changeRateSortButton.setTitleColor(.brBlack, for: .normal)
-        changeRateSortButton.titleLabel?.font = Constants.Font.bold_12
-        changeRateSortButton.titleLabel?.textAlignment = .right
-        
-        tradePriceSortButton.setTitle("거래대금", for: .normal)
-        tradePriceSortButton.setTitleColor(.brBlack, for: .normal)
-        tradePriceSortButton.titleLabel?.font = Constants.Font.bold_12
-        tradePriceSortButton.titleLabel?.textAlignment = .right
         
         tableView.separatorStyle = .none
         tableView.rowHeight = 44

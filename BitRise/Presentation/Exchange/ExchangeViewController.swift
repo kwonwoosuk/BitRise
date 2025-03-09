@@ -24,7 +24,7 @@ final class ExchangeViewController: BaseViewController {
         setupTableView()
     }
     
-    override func viewWillAppear(_ animated: Bool) { // 딜리게이트도 수정해줘야댐
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         viewModel.startTimer()
     }
@@ -58,13 +58,10 @@ final class ExchangeViewController: BaseViewController {
                 }
             }
         
-        
-        // 버튼 탭 이벤트
         let currentPriceSortTap = mainView.currentPriceSortButton.rx.tap
         let changeRateSortTap = mainView.changeRateSortButton.rx.tap
         let tradePriceSortTap = mainView.tradePriceSortButton.rx.tap
         
-        // Input 구성
         let input = ExchangeViewModel.Input(
             viewDidLoad: viewDidLoadTrigger,
             timerTrigger: emptyTimer,
@@ -98,27 +95,19 @@ final class ExchangeViewController: BaseViewController {
     }
     
     private func updateSortButtonsUI(sortType: SortType?, sortOrder: SortOrder) {
-        [mainView.currentPriceSortButton, mainView.changeRateSortButton, mainView.tradePriceSortButton].forEach {
-            $0.setImage(nil, for: .normal)
-        }
+        mainView.currentPriceSortButton.sortOrder = .none
+        mainView.changeRateSortButton.sortOrder = .none
+        mainView.tradePriceSortButton.sortOrder = .none
         
-        guard let sortType = sortType, sortOrder != .none else {
-            return
-        }
-        
-        // 선택된 정렬 버튼에 화살표 이미지임시 추가
-        // 커스텀으로 해야겠다 뒤엔 추가가 안된다...
-        let arrowImage = sortOrder == .ascending ?
-            UIImage(systemName: Constants.Icon.arrowUp) :
-            UIImage(systemName: Constants.Icon.arrowDown)
+        guard let sortType = sortType else { return }
         
         switch sortType {
         case .currentPrice:
-            mainView.currentPriceSortButton.setImage(arrowImage, for: .normal)
+            mainView.currentPriceSortButton.sortOrder = sortOrder
         case .changeRate:
-            mainView.changeRateSortButton.setImage(arrowImage, for: .normal)
+            mainView.changeRateSortButton.sortOrder = sortOrder
         case .tradePrice:
-            mainView.tradePriceSortButton.setImage(arrowImage, for: .normal)
+            mainView.tradePriceSortButton.sortOrder = sortOrder
         }
     }
     

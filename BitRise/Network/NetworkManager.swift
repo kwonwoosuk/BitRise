@@ -48,11 +48,9 @@ final class NetworkManager {
                 .responseDecodable(of: [UpbitTicker].self) { response in
                 switch response.result {
                 case .success(let data):
-                    print("SUCCESS", url)
                     print("STATUS CODE \(response.response?.statusCode ?? 000)")
                     value(.success(data))
                 case .failure(let error):
-                    print("FAILURE \(error)")
                     print("STATUS CODE \(response.response?.statusCode ?? 000)")
                     
                     let errorStatusCode = response.response?.statusCode
@@ -70,7 +68,7 @@ final class NetworkManager {
             }
         
             return Disposables.create {
-                print("Disposed")
+                print("NetworkManager Disposed")
             }
         }
     }

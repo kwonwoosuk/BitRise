@@ -13,11 +13,10 @@ final class BitRiseTabBarController: UITabBarController {
         super.viewDidLoad()
         configureTabBarController()
         setupTabBarAppearance()
-        
+        tabBar.delegate = self
     }
     
     private func configureTabBarController() {
-        tabBar.delegate = self
         
         let firstTab = ExchangeViewController()
         firstTab.tabBarItem.image = UIImage(systemName: Constants.Icon.exchange)

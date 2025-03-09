@@ -24,6 +24,7 @@ enum SortOrder {
 final class ExchangeViewModel: BaseViewModel {
     
     var disposeBag = DisposeBag()
+    private var timerDisposable: Disposable?
     
     private let networkManager = NetworkManager.shared
     private let tickersRelay = BehaviorRelay<[UpbitTicker]>(value: [])
@@ -55,14 +56,18 @@ final class ExchangeViewModel: BaseViewModel {
     }
     
     func transform(input: Input) -> Output {
-        Observable.merge(
-            input.viewDidLoad,
-            input.timerTrigger
-        )
-        .subscribe(onNext: { [weak self] in
-            self?.fetchTickers()
-        })
-        .disposed(by: disposeBag)
+        input.viewDidLoad
+            .subscribe(onNext: { [weak self] in
+                self?.fetchTickers()
+            })
+            .disposed(by: disposeBag)
+        
+        // 타이머
+        input.timerTrigger
+            .subscribe(onNext: { [weak self] in
+                self?.fetchTickers()
+            })
+            .disposed(by: disposeBag)
         
         input.currentPriceSortTap
             .debug("현재가 탭")
@@ -91,6 +96,22 @@ final class ExchangeViewModel: BaseViewModel {
             sortType: sortTypeRelay.asDriver(),
             sortOrder: sortOrderRelay.asDriver()
         )
+    }
+    
+    func startTimer() {
+        stopTimer() // 기존타이머 dispose
+        
+        timerDisposable = Observable<Int>.interval(.seconds(5), scheduler: MainScheduler.instance)
+            .subscribe(onNext: { [weak self] _ in
+                print("타이머 실행됨")
+                self?.fetchTickers()
+            })
+    }
+    
+    func stopTimer() {
+        timerDisposable?.dispose()
+        timerDisposable = nil
+        print("timer dispoe됨")
     }
     
     private func fetchTickers() {

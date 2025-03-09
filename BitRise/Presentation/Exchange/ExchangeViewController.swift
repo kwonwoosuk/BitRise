@@ -24,6 +24,16 @@ final class ExchangeViewController: BaseViewController {
         setupTableView()
     }
     
+    override func viewWillAppear(_ animated: Bool) { // 딜리게이트도 수정해줘야댐
+        super.viewWillAppear(animated)
+        viewModel.startTimer()
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        viewModel.stopTimer()
+    }
+    
     private func setupNavigationBar() {
         
         let naviLabel = UILabel()
@@ -42,9 +52,12 @@ final class ExchangeViewController: BaseViewController {
     override func bind() {
         let viewDidLoadTrigger = Observable.just(())
         
-        // 5초마다 자동 새로고침 // 탭바 델리게이트로 다른뷰 가면 멈춰 주도록하능 기능 추가해야함
-        let timer = Observable<Int>.interval(.seconds(5), scheduler: MainScheduler.instance)
-            .map { _ in () }
+        let emptyTimer = Observable<Void>.create { observer in
+                return Disposables.create {
+                    print("타이머 Observable Disposed ")
+                }
+            }
+        
         
         // 버튼 탭 이벤트
         let currentPriceSortTap = mainView.currentPriceSortButton.rx.tap
@@ -54,7 +67,7 @@ final class ExchangeViewController: BaseViewController {
         // Input 구성
         let input = ExchangeViewModel.Input(
             viewDidLoad: viewDidLoadTrigger,
-            timerTrigger: timer,
+            timerTrigger: emptyTimer,
             currentPriceSortTap: currentPriceSortTap,
             changeRateSortTap: changeRateSortTap,
             tradePriceSortTap: tradePriceSortTap

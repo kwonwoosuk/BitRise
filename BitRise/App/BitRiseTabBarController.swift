@@ -22,11 +22,11 @@ final class BitRiseTabBarController: UITabBarController {
         firstTab.tabBarItem.image = UIImage(systemName: Constants.Icon.exchange)
         firstTab.tabBarItem.title  = "거래소"
         
-        let secondTab = SearchViewController()
+        let secondTab = TrendingViewController()
         secondTab.tabBarItem.image = UIImage(systemName: Constants.Icon.coinInfo)
         secondTab.tabBarItem.title = "코인정보"
         
-        let thirdTab = ExchangeViewController()
+        let thirdTab = ThirdEmptyViewController()
         thirdTab.tabBarItem.title = "포트폴리오"
         thirdTab.tabBarItem.image = UIImage(systemName: Constants.Icon.star)
         

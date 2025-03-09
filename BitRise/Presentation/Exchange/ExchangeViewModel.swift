@@ -102,8 +102,8 @@ final class ExchangeViewModel: BaseViewModel {
         stopTimer() // 기존타이머 dispose
         
         timerDisposable = Observable<Int>.interval(.seconds(5), scheduler: MainScheduler.instance)
-            .subscribe(onNext: { [weak self] _ in
-                print("타이머 실행됨")
+            .bind(onNext: { [weak self] _ in
+                //                print("타이머 실행됨")
                 self?.fetchTickers()
             })
     }
@@ -111,7 +111,7 @@ final class ExchangeViewModel: BaseViewModel {
     func stopTimer() {
         timerDisposable?.dispose()
         timerDisposable = nil
-        print("timer dispoe됨")
+        //        print("timer dispoe됨")
     }
     
     private func fetchTickers() {
@@ -179,29 +179,29 @@ final class ExchangeViewModel: BaseViewModel {
     }
     
     private func applySorting(tickers: [UpbitTicker], type: SortType, ascending: Bool) {
-            var sortedTickers: [UpbitTicker] = []
-            
-            switch type {
-            case .currentPrice:
-                sortedTickers = tickers.sorted { ticker1, ticker2 in
-                    return ascending ? ticker1.tradePrice < ticker2.tradePrice : ticker1.tradePrice > ticker2.tradePrice
-                }
-                
-            case .changeRate:
-                sortedTickers = tickers.sorted { ticker1, ticker2 in
-                    return ascending ? ticker1.signedChangeRate < ticker2.signedChangeRate : ticker1.signedChangeRate > ticker2.signedChangeRate
-                }
-                
-            case .tradePrice:
-                sortedTickers = sortByTradePrice(tickers: tickers, ascending: ascending)
+        var sortedTickers: [UpbitTicker] = []
+        
+        switch type {
+        case .currentPrice:
+            sortedTickers = tickers.sorted { ticker1, ticker2 in
+                return ascending ? ticker1.tradePrice < ticker2.tradePrice : ticker1.tradePrice > ticker2.tradePrice
             }
             
-            tickersRelay.accept(sortedTickers)
+        case .changeRate:
+            sortedTickers = tickers.sorted { ticker1, ticker2 in
+                return ascending ? ticker1.signedChangeRate < ticker2.signedChangeRate : ticker1.signedChangeRate > ticker2.signedChangeRate
+            }
+            
+        case .tradePrice:
+            sortedTickers = sortByTradePrice(tickers: tickers, ascending: ascending)
         }
         
-        private func sortByTradePrice(tickers: [UpbitTicker], ascending: Bool) -> [UpbitTicker] {
-            return tickers.sorted { ticker1, ticker2 in
-                return ascending ? ticker1.accTradePrice < ticker2.accTradePrice : ticker1.accTradePrice > ticker2.accTradePrice
-            }
+        tickersRelay.accept(sortedTickers)
+    }
+    
+    private func sortByTradePrice(tickers: [UpbitTicker], ascending: Bool) -> [UpbitTicker] {
+        return tickers.sorted { ticker1, ticker2 in
+            return ascending ? ticker1.accTradePrice < ticker2.accTradePrice : ticker1.accTradePrice > ticker2.accTradePrice
         }
     }
+}

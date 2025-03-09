@@ -23,7 +23,7 @@ final class ExchangeView: BaseView {
     }
     
     override func configureLayout() {
-                
+        
         headerBackgroundView.snp.makeConstraints { make in
             make.top.equalTo(safeAreaLayoutGuide)
             make.horizontalEdges.equalToSuperview()

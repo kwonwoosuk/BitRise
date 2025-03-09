@@ -35,7 +35,7 @@ final class ExchangeTableViewCell: BaseTableViewCell {
         coinNameLabel.snp.makeConstraints { make in
             make.top.equalToSuperview().offset(8)
             make.leading.equalToSuperview().offset(16)
-            make.width.equalToSuperview().multipliedBy(0.2)
+            make.width.equalToSuperview().multipliedBy(0.25)
         }
         
         currentPriceLabel.snp.makeConstraints { make in
@@ -47,7 +47,7 @@ final class ExchangeTableViewCell: BaseTableViewCell {
         changeRateStackView.snp.makeConstraints { make in
             make.top.equalTo(coinNameLabel)
             make.leading.equalTo(currentPriceLabel.snp.trailing)
-            make.width.equalToSuperview().multipliedBy(0.3)
+            make.width.equalToSuperview().multipliedBy(0.25)
         }
         
         tradePriceLabel.snp.makeConstraints { make in
@@ -115,7 +115,7 @@ final class ExchangeTableViewCell: BaseTableViewCell {
     }
     
     // https://ho8487.tistory.com/83 Double에서 나누기 연산을 하려니 에러를 만났습니다...
-    // 현재가 포맷팅 (tradePrice)
+    // 현재가 포맷팅 (tradePrice) // 거래소 화면에서만 쓰이는 포멧팅
     private func formatCurrentPrice(_ price: Double) -> String { // 현재가는 기본 소수점 표기방식 외 반올림후 소수점 2자리가 0인경우 1자리까지 표시
         if price.truncatingRemainder(dividingBy: 1) == 0 {
             // 정수인 경우 - .formatted() 사용
@@ -172,29 +172,20 @@ final class ExchangeTableViewCell: BaseTableViewCell {
     
     private func setChangeColor(change: String) {
         let textColor: UIColor
-//        let prefixForChange: String  //signed로 받으면 굳이 로직이 들어가 필요가 있을까?
         
         switch change {
         case "RISE":
             textColor = .brRed // 상승
-                               // 거래소 화면에서는 양수일시 기호 미사용
         case "FALL":
             textColor = .brBlue // 하락
-//            prefixForChange = "-" // 하락은 - 기호 사용
             
         default: // "EVEN"
             textColor = .brBlack // 변동 없음
-//            prefixForChange = ""
         }
         
         // 변화율과 변화량 텍스트 색상 설정
         changeRateLabel.textColor = textColor
         changePriceLabel.textColor = textColor
-        
-//        // 변화량에 접두사 추가 (FALL인 경우만 -)
-//        if change == "FALL" && !changePriceLabel.text!.hasPrefix("-") {
-//            changePriceLabel.text = "-\(changePriceLabel.text!)"
-//        }
     }
     
     

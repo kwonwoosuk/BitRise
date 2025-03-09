@@ -17,7 +17,7 @@ final class ExchangeViewController: BaseViewController {
     override func loadView() {
         view = mainView
     }
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupNavigationBar()
@@ -53,10 +53,10 @@ final class ExchangeViewController: BaseViewController {
         let viewDidLoadTrigger = Observable.just(())
         
         let emptyTimer = Observable<Void>.create { observer in
-                return Disposables.create {
-                    print("타이머 Observable Disposed ")
-                }
+            return Disposables.create {
+                print("타이머 Observable Disposed ")
             }
+        }
         
         let currentPriceSortTap = mainView.currentPriceSortButton.rx.tap
         let changeRateSortTap = mainView.changeRateSortButton.rx.tap
@@ -70,7 +70,7 @@ final class ExchangeViewController: BaseViewController {
             tradePriceSortTap: tradePriceSortTap
         )
         let output = viewModel.transform(input: input)
-    
+        
         output.tickers
             .drive(mainView.tableView.rx.items(cellIdentifier: ExchangeTableViewCell.identifier, cellType: ExchangeTableViewCell.self)) { _, element, cell in
                 cell.configure(with: element)
@@ -80,7 +80,7 @@ final class ExchangeViewController: BaseViewController {
         output.error
             .drive(onNext: { [weak self] error in
                 if let error = error {
-                    self?.showErrorAlert(with: error.message)
+                    self?.showErrorAlert(message: error.message)
                 }
             })
             .disposed(by: disposeBag)
@@ -111,11 +111,11 @@ final class ExchangeViewController: BaseViewController {
         }
     }
     
-    private func showErrorAlert(with message: String) {
+    private func showErrorAlert(message: String) {
         let alert = UIAlertController(title: "오류", message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "확인", style: .default))
         present(alert, animated: true)
     }
     
-  
+    
 }

@@ -38,7 +38,7 @@ class SortButton: UIButton {
         downArrowImageView.tintColor = .lightGray
         downArrowImageView.contentMode = .scaleAspectFit
         downArrowImageView.preferredSymbolConfiguration = UIImage.SymbolConfiguration(pointSize: 7, weight: .light)
-                
+        
         
         arrowStackView.axis = .vertical
         arrowStackView.spacing = -3

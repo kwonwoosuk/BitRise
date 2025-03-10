@@ -19,6 +19,7 @@ final class TrendingViewModel: BaseViewModel {
     private let timestampRelay = BehaviorRelay<Date?>(value: nil)
     private let errorRelay = PublishRelay<APIError>()
     private let loadingRelay = BehaviorRelay<Bool>(value: false)
+    private let pushToSearchRelay = PublishRelay<String>()
     
     struct Input {
         let viewDidLoad: Observable<Void>
@@ -32,6 +33,7 @@ final class TrendingViewModel: BaseViewModel {
         let timestamp: Driver<Date?>
         let isLoading: Driver<Bool>
         let error: Driver<APIError>
+        let pushToSearch: Driver<String>
         
     }
     
@@ -42,9 +44,8 @@ final class TrendingViewModel: BaseViewModel {
     deinit {
         print("⭐️ TrendingViewModel DEINIT ⭐️")
     }
-
+    
     func transform(input: Input) -> Output {
-//        let searchresult = BehaviorSubject(value: ) 상세화면 객체 만들고 생성
         
         Observable.merge(
             input.viewDidLoad,
@@ -62,11 +63,9 @@ final class TrendingViewModel: BaseViewModel {
         
         input.searchBarReturnKey
             .filter { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
-            .map { $0}
-            .asDriver(onErrorJustReturn: "")
-            .drive(with: self) { owner, value in
-             // 뷰 넘기기
-            }
+            .subscribe(onNext: { [weak self] query in
+                self?.pushToSearchRelay.accept(query)
+            })
             .disposed(by: disposeBag)
         
         return Output(
@@ -74,28 +73,43 @@ final class TrendingViewModel: BaseViewModel {
             trendingNFTs: trendingNFTsRelay.asDriver(),
             timestamp: timestampRelay.asDriver(),
             isLoading: loadingRelay.asDriver(),
-            error: errorRelay.asDriver(onErrorJustReturn: .unknownError)
-            
+            error: errorRelay.asDriver(onErrorJustReturn: .unknownError),
+            pushToSearch: pushToSearchRelay.asDriver(onErrorJustReturn: "")
         )
     }
     
     private func fetchTrendingData() -> Observable<Void> {
-        return networkManager.fetchTrendingData()
-            .asObservable()
-            .do(onNext: { [weak self] result in
-                self?.processTrendingData(result.coins, result.nfts)
-                self?.timestampRelay.accept(result.timestamp)
-                self?.loadingRelay.accept(false)
-            }, onError: { [weak self] error in
-                self?.loadingRelay.accept(false)
-                if let apiError = error as? APIError {
-                    self?.errorRelay.accept(apiError)
-                } else {
-                    self?.errorRelay.accept(.unknownError)
-                }
-            })
-            .map { _ in () }
-            .catchAndReturn(())
+        return Observable<Void>.create { [weak self] observer in
+            guard let self = self else {
+                observer.onCompleted()
+                return Disposables.create()
+            }
+            
+            let disposable = self.networkManager.fetchTrendingData()
+                .subscribe(
+                    onSuccess: { result in
+                        self.processTrendingData(result.coins, result.nfts)
+                        self.timestampRelay.accept(result.timestamp)
+                        self.loadingRelay.accept(false)
+                        observer.onNext(())
+                        observer.onCompleted()
+                    },
+                    onFailure: { error in
+                        self.loadingRelay.accept(false)
+                        if let apiError = error as? APIError {
+                            self.errorRelay.accept(apiError)
+                        } else {
+                            self.errorRelay.accept(.unknownError)
+                        }
+                        observer.onNext(())
+                        observer.onCompleted()
+                    }
+                )
+            
+            return Disposables.create {
+                disposable.dispose()
+            }
+        }
     }
     
     private func processTrendingData(_ coins: [TrendingCoin], _ nfts: [TrendingNFT]) {

@@ -26,6 +26,7 @@ final class ExchangeViewController: BaseViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        //콜을 동시에 해줄까 하다가 사용자가 미친듯이 탭전환해서 요청수가 많으면... 근데 초당 30회 인거같은데 
         viewModel.startTimer()
     }
     

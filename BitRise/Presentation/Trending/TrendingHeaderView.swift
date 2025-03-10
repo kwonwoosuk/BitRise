@@ -12,7 +12,7 @@ import RxCocoa
 
 final class TrendingHeaderView: BaseView {
     
-    let searchBar = UISearchBar()
+    let searchBar = UISearchBar(frame: CGRect(x: 0, y: 0, width: UIScreen.main.bounds.width, height: 56))
     
     let disposeBag = DisposeBag()
     
@@ -25,7 +25,7 @@ final class TrendingHeaderView: BaseView {
             make.top.equalTo(safeAreaLayoutGuide).offset(8)
             make.leading.trailing.equalToSuperview().inset(16)
             make.bottom.equalToSuperview().offset(-8)
-            make.height.equalTo(44)
+            make.height.equalTo(40)
         }
     }
     
@@ -37,8 +37,11 @@ final class TrendingHeaderView: BaseView {
         searchBar.backgroundColor = .white
         searchBar.setImage(UIImage(systemName: "magnifyingglass"), for: .search, state: .normal)
         searchBar.clipsToBounds = true
+        searchBar.searchTextField.font = Constants.Font.regular_12
+        
         
         let textField = searchBar.searchTextField
+        textField.clearButtonMode = .never
         textField.backgroundColor = .clear
         textField.layer.cornerRadius = 18
         textField.clipsToBounds = true
@@ -53,16 +56,5 @@ final class TrendingHeaderView: BaseView {
             string: "검색어를 입력해주세요.",
             attributes: placeholderAttributes
         )
-    }
-    
-    func setupTapGesture(in viewController: UIViewController) {
-        let tapGesture = UITapGestureRecognizer()
-        viewController.view.addGestureRecognizer(tapGesture)
-        
-        tapGesture.rx.event
-            .bind(onNext: { [weak self] _ in
-                self?.searchBar.resignFirstResponder()
-            })
-            .disposed(by: disposeBag)
     }
 }

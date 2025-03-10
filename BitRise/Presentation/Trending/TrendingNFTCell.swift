@@ -37,7 +37,7 @@ final class TrendingNFTCell: BaseCollectionViewCell {
         nftImageView.snp.makeConstraints { make in
             make.top.equalToSuperview().offset(8)
             make.centerX.equalToSuperview()
-            make.size.equalTo(80)
+            make.size.equalTo(72)
         }
         
         nameLabel.snp.makeConstraints { make in
@@ -62,18 +62,18 @@ final class TrendingNFTCell: BaseCollectionViewCell {
         
         nftImageView.contentMode = .scaleAspectFit
         nftImageView.clipsToBounds = true
-        nftImageView.layer.cornerRadius = 28
+        nftImageView.layer.cornerRadius = 28  // check 72 * 72
         
-        nameLabel.font = Constants.Font.bold_9
+        nameLabel.font = Constants.Font.bold_9  // check
         nameLabel.textColor = .brBlack
         nameLabel.textAlignment = .center
         nameLabel.lineBreakMode = .byTruncatingTail
         
-        priceLabel.font = Constants.Font.regular_9
+        priceLabel.font = Constants.Font.regular_9 // check
         priceLabel.textColor = .brGray
         priceLabel.textAlignment = .center
         
-        percentageLabel.font = Constants.Font.bold_9
+        percentageLabel.font = Constants.Font.bold_9 // check
         percentageLabel.textAlignment = .center
     }
     

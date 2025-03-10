@@ -49,7 +49,7 @@ final class TrendingView: BaseView {
         headerView.snp.makeConstraints { make in
             make.top.equalTo(safeAreaLayoutGuide)
             make.leading.trailing.equalToSuperview()
-            make.height.greaterThanOrEqualTo(44)
+            make.height.greaterThanOrEqualTo(56)
         }
         
         coinsSectionLabel.snp.makeConstraints { make in

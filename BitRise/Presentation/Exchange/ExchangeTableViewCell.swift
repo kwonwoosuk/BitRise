@@ -60,11 +60,11 @@ final class ExchangeTableViewCell: BaseTableViewCell {
     
     override func configureView() {
         // 코인
-        coinNameLabel.font = Constants.Font.bold_12
+        coinNameLabel.font = Constants.Font.bold_12 // check
         coinNameLabel.textColor = .brBlack
         
         // 현재가
-        currentPriceLabel.font = Constants.Font.regular_12
+        currentPriceLabel.font = Constants.Font.regular_12 // check
         currentPriceLabel.textColor = .brBlack
         currentPriceLabel.textAlignment = .right
         
@@ -75,15 +75,15 @@ final class ExchangeTableViewCell: BaseTableViewCell {
         changeRateStackView.alignment = .trailing
         
         // 전일대비 상(가격변동률)
-        changeRateLabel.font = Constants.Font.regular_12
+        changeRateLabel.font = Constants.Font.regular_12 // check
         changeRateLabel.textAlignment = .right
         
         // 전일대비 하(가격)
-        changePriceLabel.font = Constants.Font.regular_9
+        changePriceLabel.font = Constants.Font.regular_9 // check
         changePriceLabel.textAlignment = .right
         
         // 거래대금
-        tradePriceLabel.font = Constants.Font.regular_12
+        tradePriceLabel.font = Constants.Font.regular_12 // check
         tradePriceLabel.textColor = .brBlack
         tradePriceLabel.textAlignment = .right
     }

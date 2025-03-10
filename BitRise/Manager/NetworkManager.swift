@@ -47,9 +47,7 @@ final class NetworkManager {
                     }
                 }
             
-            return Disposables.create {
-                print("Disposed")
-            }
+            return Disposables.create()
         }
     }
     
@@ -73,9 +71,6 @@ final class NetworkManager {
                         let rankCoin = Array(trendingCoins.prefix(14))
                         
                         let rankNFT = Array(data.nfts.prefix(7))
-                        //                            let a = data.nfts
-                        
-                        
                         let timestamp = Date()
                         
                         value(.success((coins: rankCoin, nfts: rankNFT, timestamp: timestamp)))
@@ -113,8 +108,57 @@ final class NetworkManager {
                     }
                 }
             
+            return Disposables.create()
+        }
+    }
+    
+    func searchCoins(query: String) -> Single<Result<SearchResponse, APIError>> {
+        return Single<Result<SearchResponse, APIError>>.create { value in
+            let urlString = APIURL.coinGeckoSearchURL(query: query)
+            guard let url = URL(string: urlString) else {
+                value(.success(.failure(.invalidURL)))
+                return Disposables.create()
+            }
+            
+            AF.request(url, method: .get)
+                .validate(statusCode: 200..<299)
+                .responseDecodable(of: SearchResponse.self) { response in
+                    switch response.result {
+                    case .success(let data):
+                        print("STATUS CODE \(response.response?.statusCode ?? 000)")
+                        value(.success(.success(data)))
+                    case .failure(let error):
+                        print("STATUS CODE \(response.response?.statusCode ?? 000)")
+                        
+                        let errorStatusCode = response.response?.statusCode
+                        switch errorStatusCode {
+                        case 400:
+                            value(.success(.failure(.coinGeckoError(.badRequest))))
+                        case 401:
+                            value(.success(.failure(.coinGeckoError(.unauthorized))))
+                        case 403:
+                            value(.success(.failure(.coinGeckoError(.forbidden))))
+                        case 404:
+                            value(.success(.failure(.invalidURL)))
+                        case 429:
+                            value(.success(.failure(.callLimitExceeded)))
+                        case 500:
+                            value(.success(.failure(.coinGeckoError(.serverError))))
+                        case 503:
+                            value(.success(.failure(.coinGeckoError(.serviceUnavailable))))
+                        default:
+                            if let errorDescription = error.errorDescription,
+                               errorDescription.contains("CORS") {
+                                value(.success(.failure(.coinGeckoError(.corsError))))
+                            } else {
+                                value(.success(.failure(.unknownError)))
+                            }
+                        }
+                    }
+                }
+            
             return Disposables.create {
-                print("Disposed trending request")
+                print("Search request disposed됨")
             }
         }
     }

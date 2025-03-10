@@ -23,9 +23,8 @@ final class TrendingViewController: BaseViewController {
         super.viewDidLoad()
         setupNavigationBar()
         setupCollectionViews()
-        mainView.headerView.setupTapGesture(in: self)
     }
-
+    
     private func setupNavigationBar() {
         let naviLabel = UILabel()
         naviLabel.text = "가상자산 / 심볼 검색"
@@ -36,12 +35,14 @@ final class TrendingViewController: BaseViewController {
     }
     
     private func setupCollectionViews() {
-
+        
         mainView.coinsCollectionView.dataSource = self
         mainView.coinsCollectionView.delegate = self
         
         mainView.nftsCollectionView.dataSource = self
         mainView.nftsCollectionView.delegate = self
+        mainView.coinsCollectionView.keyboardDismissMode = .onDrag
+        mainView.nftsCollectionView.keyboardDismissMode = .onDrag
     }
     
     override func bind() {
@@ -85,23 +86,22 @@ final class TrendingViewController: BaseViewController {
             })
             .disposed(by: disposeBag)
         
-//        output.pushToSearchResult
-//            .drive(onNext: { [weak self] query in
-//                self?.navigateToSearchResult(with: query)
-//                self?.mainView.headerView.searchBar.text = ""
-//                self?.mainView.headerView.searchBar.resignFirstResponder()
-//            })
-//            .disposed(by: disposeBag)
+        output.pushToSearch
+            .drive(onNext: { [weak self] query in
+                self?.navigateToSearch(with: query)
+            })
+            .disposed(by: disposeBag)
     }
     
-//    private func navigateToSearchResult(with query: String) {
-//        // 검색 결과 화면으로 이동하는 로직 (추후 구현)
-//        print("검색어: \(query)")
-//        // let searchResultVC = SearchResultViewController(query: query)
-//        // navigationController?.pushViewController(searchResultVC, animated: true)
-//    }
     
-   
+    private func navigateToSearch(with query: String) {
+        let searchVC = SearchViewController()
+        searchVC.initialSearchQuery = query
+        navigationController?.pushViewController(searchVC, animated: true)
+        
+        mainView.headerView.searchBar.text = ""
+        mainView.headerView.searchBar.resignFirstResponder()
+    }
 }
 
 extension TrendingViewController: UICollectionViewDataSource {
@@ -146,7 +146,7 @@ extension TrendingViewController: UICollectionViewDataSource {
             let nfts = viewModel.getCurrentTrendingNFTs()
             if indexPath.item < nfts.count {
                 let nft = nfts[indexPath.item]
-
+                
                 let priceChangePercentage = Double(nft.data?.floorPriceInUsd24hPercentageChange ?? "0") ?? 0.0
                 cell.configure(nft: nft, priceChangePercentage: priceChangePercentage)
             }
@@ -166,9 +166,10 @@ extension TrendingViewController: UICollectionViewDelegate {
             if indexPath.item < coins.count {
                 let selectedCoin = coins[indexPath.item]
                 print("선택된 코인: \(selectedCoin.name)")
-                // 코인 상세 화면으로 이동 (추후 구현)
-                // let detailVC = CoinDetailViewController(coinId: selectedCoin.id)
-                // navigationController?.pushViewController(detailVC, animated: true)
+                
+                let vc = CoinDetailViewController()
+                vc.navigationItem.title = selectedCoin.symbol
+                navigationController?.pushViewController(vc, animated: true)
             }
         } else if collectionView == mainView.nftsCollectionView {
             return

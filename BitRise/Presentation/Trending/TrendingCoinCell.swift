@@ -44,7 +44,7 @@ final class TrendingCoinCell: BaseCollectionViewCell {
         coinImageView.snp.makeConstraints { make in
             make.leading.equalTo(rankLabel.snp.trailing).offset(4)
             make.centerY.equalToSuperview()
-            make.width.height.equalTo(28)
+            make.width.height.equalTo(26)
         }
         
         symbolNameStackView.snp.makeConstraints { make in
@@ -60,34 +60,29 @@ final class TrendingCoinCell: BaseCollectionViewCell {
     }
     
     override func configureView() {
-        // 랭크
-        rankLabel.font = Constants.Font.regular_12
+        rankLabel.font = Constants.Font.regular_12 // check
         rankLabel.textColor = .brBlack
         rankLabel.textAlignment = .center
         
-        // 코인 이미지
         coinImageView.contentMode = .scaleAspectFit
         coinImageView.clipsToBounds = true
-        coinImageView.layer.cornerRadius = 14
+        coinImageView.layer.cornerRadius = 13  // check -> 26 * 26
         
         symbolNameStackView.axis = .vertical
         symbolNameStackView.spacing = 2
         symbolNameStackView.alignment = .leading
         
-        // 심볼(이름 레이블
-        symbolLabel.font = Constants.Font.bold_12
+        symbolLabel.font = Constants.Font.bold_12  // check
         symbolLabel.textColor = .brBlack
         symbolLabel.lineBreakMode = .byTruncatingTail
-        // 풀네임
-        nameLabel.font = Constants.Font.regular_9
+        
+        nameLabel.font = Constants.Font.regular_9  // check
         nameLabel.textColor = .darkGray
         nameLabel.lineBreakMode = .byTruncatingTail
         
-        // 변동률
-        percentageLabel.font = Constants.Font.bold_9
+        percentageLabel.font = Constants.Font.bold_9  // check
     }
     
-    // MARK: - configure Cell
     func configure(coin: TrendingCoin, rank: Int, priceChangePercentage: Double) {
         rankLabel.text = "\(rank)"
         symbolLabel.text = coin.symbol.uppercased()

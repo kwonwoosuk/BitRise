@@ -114,18 +114,27 @@ final class ExchangeTableViewCell: BaseTableViewCell {
         setChangeColor(change: ticker.change)
     }
     
-    // https://ho8487.tistory.com/83 Double에서 나누기 연산을 하려니 에러를 만났습니다...
+    
     // 현재가 포맷팅 (tradePrice) // 거래소 화면에서만 쓰이는 포멧팅
-    private func formatCurrentPrice(_ price: Double) -> String { // 현재가는 기본 소수점 표기방식 외 반올림후 소수점 2자리가 0인경우 1자리까지 표시
-        if price.truncatingRemainder(dividingBy: 1) == 0 {
-            // 정수인 경우 - .formatted() 사용
+    private func formatCurrentPrice(_ price: Double) -> String {
+        // 정수부가 4자리 이상인 경우 정수 포맷팅 사용
+        if abs(price) >= 1000 && price.truncatingRemainder(dividingBy: 1) == 0 {
             return Int(price).formatted()
+        }
+        
+        // 정수부가 3자리 이하이면 소수점한자리까지 표시
+        if price.truncatingRemainder(dividingBy: 1) == 0 {
+            let formatter = NumberFormatter()
+            formatter.numberStyle = .decimal
+            formatter.minimumFractionDigits = 1
+            formatter.maximumFractionDigits = 1
+            return formatter.string(from: NSNumber(value: price)) ?? "0"
         } else {
             // 소수점이 있는 경우
             let formatter = NumberFormatter()
             formatter.numberStyle = .decimal
             formatter.maximumFractionDigits = 2
-            formatter.minimumFractionDigits = 0
+            formatter.minimumFractionDigits = 1
             
             if (price * 10).truncatingRemainder(dividingBy: 1) == 0 {
                 formatter.maximumFractionDigits = 1
@@ -142,21 +151,25 @@ final class ExchangeTableViewCell: BaseTableViewCell {
     }
     
     /// 변화량 포멧팅 소수둘떄
-    private func formatChangePrice(_ price: Double) -> String { // 가격 변화량은 기본 소수점 표기방식을 따라 3자리에서 반올림하여 소수점 2자리까지 표시
+    private func formatChangePrice(_ price: Double) -> String {
         if price == 0 {
             return "0"
         }
         
-        if price.truncatingRemainder(dividingBy: 1) == 0 {
-            // 정수인 경우
-            return Int(price).formatted()
+        
+        let roundedPrice = round(price * 100) / 100 // 3자리에서 반올림
+        
+        if roundedPrice.truncatingRemainder(dividingBy: 1) == 0 {
+            
+            return Int(roundedPrice).formatted()
         } else {
             // 소수점이 있는 경우
             let formatter = NumberFormatter()
             formatter.numberStyle = .decimal
             formatter.maximumFractionDigits = 2
+            formatter.minimumFractionDigits = 2
             
-            return formatter.string(from: NSNumber(value: price)) ?? "0"
+            return formatter.string(from: NSNumber(value: roundedPrice)) ?? "0"
         }
     }
     

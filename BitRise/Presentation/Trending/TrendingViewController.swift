@@ -81,7 +81,7 @@ final class TrendingViewController: BaseViewController {
         
         output.error
             .drive(onNext: { [weak self] error in
-                self?.showErrorAlert(with: error)
+                self?.showErrorAlert(message: error.message)
             })
             .disposed(by: disposeBag)
         
@@ -101,11 +101,7 @@ final class TrendingViewController: BaseViewController {
 //        // navigationController?.pushViewController(searchResultVC, animated: true)
 //    }
     
-    private func showErrorAlert(with error: APIError) {
-        let alert = UIAlertController(title: "오류", message: error.message, preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "확인", style: .default))
-        present(alert, animated: true)
-    }
+   
 }
 
 extension TrendingViewController: UICollectionViewDataSource {

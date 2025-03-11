@@ -11,7 +11,7 @@ import RxSwift
 import RxCocoa
 import SnapKit
 
-final class SearchViewController: BaseViewController {
+final class SearchViewController: BaseViewController, UIGestureRecognizerDelegate {
     
     private let searchBar = UISearchBar(frame: CGRect(x: 0, y: 0, width: 340, height: 56))
     private let tabsContainerView = UIView()
@@ -33,6 +33,7 @@ final class SearchViewController: BaseViewController {
         super.viewDidLoad()
         setupNavigationBar()
         setupPageViewController()
+        navigationController?.interactivePopGestureRecognizer?.delegate = self
     }
     
     override func viewDidAppear(_ animated: Bool) {

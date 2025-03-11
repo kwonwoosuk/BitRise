@@ -125,6 +125,7 @@ final class CoinDetailViewModel: BaseViewModel {
     }
     
     private func updateFavoriteState() {
+        print("실행됨")
         let isFavorite = favoriteManager.isFavorite(coinId: coinId)
         isFavoriteRelay.accept(isFavorite)
     }

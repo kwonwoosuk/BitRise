@@ -11,7 +11,7 @@ import RxSwift
 import RxCocoa
 import Kingfisher
 
-final class CoinDetailViewController: BaseViewController {
+final class CoinDetailViewController: BaseViewController, UIGestureRecognizerDelegate {
     
     private let mainView = CoinDetailView()
     private let viewModel = CoinDetailViewModel()
@@ -34,6 +34,11 @@ final class CoinDetailViewController: BaseViewController {
         setupNavigationBar()
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        viewWillAppearRelay.accept(())
+    }
+    
     func configure(with coin: SearchCoin) {
         self.coinId = coin.id
         self.coinName = coin.name
@@ -54,7 +59,7 @@ final class CoinDetailViewController: BaseViewController {
         navigationItem.leftBarButtonItem?.tintColor = .brBlack
         
         let favoriteButton = UIBarButtonItem(
-            image: UIImage(systemName: Constants.Icon.star),
+            image: nil,
             style: .plain,
             target: self,
             action: #selector(favoriteButtonTapped)
@@ -92,7 +97,7 @@ final class CoinDetailViewController: BaseViewController {
         
         stackView.addArrangedSubview(coinImageView)
         stackView.addArrangedSubview(symbolLabel)
-        
+        navigationController?.interactivePopGestureRecognizer?.delegate = self
         navigationItem.titleView = stackView
     }
     @objc private func backButtonTapped() {

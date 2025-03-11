@@ -8,6 +8,7 @@
 import UIKit
 import RxSwift
 import RxCocoa
+import SnapKit
 
 final class SearchCoinViewController: BaseViewController {
     
@@ -23,9 +24,9 @@ final class SearchCoinViewController: BaseViewController {
         view = mainView
     }
     override func viewDidLoad() {
-            super.viewDidLoad()
-            setupToastView()
-        }
+        super.viewDidLoad()
+        setupToastView()
+    }
     
     override func bind() {
         let searchQuery = searchQuerySubject
@@ -33,7 +34,7 @@ final class SearchCoinViewController: BaseViewController {
             .filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
             .distinctUntilChanged()
             .share()
-    
+        
         let input = SearchCoinViewModel.Input(
             viewDidLoad: Observable.just(()),
             searchQuery: searchQuerySubject.asObservable(),
@@ -42,7 +43,7 @@ final class SearchCoinViewController: BaseViewController {
         )
         
         let output = viewModel.transform(input: input)
-
+        
         output.coins
             .drive(mainView.tableView.rx.items(cellIdentifier: SearchCoinCell.identifier, cellType: SearchCoinCell.self)) { [weak self] _, coin, cell in
                 guard let self = self else { return }
@@ -76,10 +77,10 @@ final class SearchCoinViewController: BaseViewController {
             .disposed(by: disposeBag)
         
         output.message
-                    .drive(onNext: { [weak self] message in
-                        self?.showToast(message: message)
-                    })
-                    .disposed(by: disposeBag)
+            .drive(onNext: { [weak self] message in
+                self?.showToast(message: message)
+            })
+            .disposed(by: disposeBag)
         
         mainView.tableView.rx.modelSelected(SearchCoin.self)
             .subscribe(onNext: { [weak self] coin in
@@ -91,45 +92,45 @@ final class SearchCoinViewController: BaseViewController {
     }
     
     private let toastView = UIView()
-        private let toastLabel = UILabel()
+    private let toastLabel = UILabel()
+    
+    private func setupToastView() {
+        toastView.backgroundColor = UIColor.black.withAlphaComponent(0.7)
+        toastView.layer.cornerRadius = 10
+        toastView.clipsToBounds = true
+        toastView.alpha = 0
         
-        private func setupToastView() {
-            toastView.backgroundColor = UIColor.black.withAlphaComponent(0.7)
-            toastView.layer.cornerRadius = 10
-            toastView.clipsToBounds = true
-            toastView.alpha = 0
-            
-            toastLabel.textColor = .white
-            toastLabel.font = .systemFont(ofSize: 14)
-            toastLabel.textAlignment = .center
-            toastLabel.numberOfLines = 0
-            
-            view.addSubview(toastView)
-            toastView.addSubview(toastLabel)
-            
-            toastView.snp.makeConstraints { make in
-                make.centerX.equalToSuperview()
-                make.bottom.equalToSuperview().offset(-100)
-                make.width.lessThanOrEqualToSuperview().offset(-40)
-            }
-            
-            toastLabel.snp.makeConstraints { make in
-                make.edges.equalToSuperview().inset(12)
-            }
+        toastLabel.textColor = .white
+        toastLabel.font = .systemFont(ofSize: 14)
+        toastLabel.textAlignment = .center
+        toastLabel.numberOfLines = 0
+        
+        view.addSubview(toastView)
+        toastView.addSubview(toastLabel)
+        
+        toastView.snp.makeConstraints { make in
+            make.centerX.equalToSuperview()
+            make.bottom.equalToSuperview().offset(-100)
+            make.width.lessThanOrEqualToSuperview().offset(-40)
         }
         
+        toastLabel.snp.makeConstraints { make in
+            make.edges.equalToSuperview().inset(12)
+        }
+    }
+    
+    
+    private func showToast(message: String) {
+        toastLabel.text = message
         
-        private func showToast(message: String) {
-            toastLabel.text = message
-            
-            UIView.animate(withDuration: 0.3, animations: {
-                self.toastView.alpha = 1
-            }, completion: { _ in
-                UIView.animate(withDuration: 0.3, delay: 2, options: .curveEaseOut, animations: {
-                    self.toastView.alpha = 0
-                })
+        UIView.animate(withDuration: 0.3, animations: {
+            self.toastView.alpha = 1
+        }, completion: { _ in
+            UIView.animate(withDuration: 0.3, delay: 2, options: .curveEaseOut, animations: {
+                self.toastView.alpha = 0
             })
-        }
+        })
+    }
     
     
     func updateSearchQuery(_ query: String?) {

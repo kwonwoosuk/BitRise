@@ -9,28 +9,25 @@
 import UIKit
 import RxSwift
 import RxCocoa
-import SnapKit
 import Kingfisher
 
 final class CoinDetailViewController: BaseViewController {
     
-    private let scrollView = UIScrollView()
-    private let contentView = UIView()
-    
-    private let titleNaviView = UIView()
-    private let titleNaviImageView = UIImageView()
-    private let titleNaviLabel = UILabel()
-    
-    private let infoView = UIView()
-    private let placeholderLabel = UILabel()
-    
-    private let viewModel = SearchViewModel()
+    private let mainView = CoinDetailView()
+    private let viewModel = CoinDetailViewModel()
     private let disposeBag = DisposeBag()
     
     private var coinId: String = ""
     private var coinName: String = ""
     private var coinSymbol: String = ""
-    private var coinThumb: String = ""
+    
+    private let favoriteButtonTappedRelay = PublishRelay<Void>()
+    private let moreButtonTappedRelay = PublishRelay<Void>()
+    private let viewWillAppearRelay = PublishRelay<Void>()
+    
+    override func loadView() {
+        view = mainView
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -40,116 +37,168 @@ final class CoinDetailViewController: BaseViewController {
     func configure(with coin: SearchCoin) {
         self.coinId = coin.id
         self.coinName = coin.name
-        self.coinSymbol = coin.symbol
-        self.coinThumb = coin.thumb
+        self.coinSymbol = coin.symbol.uppercased()
         
-        if isViewLoaded {
-            updateUI()
-        }
-    }
-    
-    private func updateUI() {
-        titleNaviLabel.text = coinSymbol.uppercased()
+        setupNavigationTitle(symbol: coin.symbol.uppercased(), imageUrl: coin.thumb)
         
-        if let url = URL(string: coinThumb) {
-            titleNaviImageView.kf.setImage(with: url, placeholder: UIImage(systemName: "questionmark.circle"))
-        } else {
-            titleNaviImageView.image = UIImage(systemName: "questionmark.circle")
-        }
-        updateFavoriteButton()
+        viewModel.configure(coinId: coinId, coinName: coinName)
     }
     
     private func setupNavigationBar() {
-        let backButton = UIBarButtonItem(image: UIImage(systemName: Constants.Icon.arrowLeft),
-                                         style: .plain,
-                                         target: self,
-                                         action: #selector(backButtonTapped))
-        backButton.tintColor = .brBlack
-        navigationItem.leftBarButtonItem = backButton
+        navigationItem.leftBarButtonItem = UIBarButtonItem(
+            image: UIImage(systemName: Constants.Icon.arrowLeft),
+            style: .plain,
+            target: self,
+            action: #selector(backButtonTapped)
+        )
+        navigationItem.leftBarButtonItem?.tintColor = .brBlack
         
-        let favoriteButton = UIBarButtonItem(image: UIImage(systemName: Constants.Icon.star),
-                                             style: .plain,
-                                             target: self,
-                                             action: #selector(favoriteButtonTapped))
+        let favoriteButton = UIBarButtonItem(
+            image: UIImage(systemName: Constants.Icon.star),
+            style: .plain,
+            target: self,
+            action: #selector(favoriteButtonTapped)
+        )
         favoriteButton.tintColor = .brBlack
         navigationItem.rightBarButtonItem = favoriteButton
-        
-        setupTitleView()
     }
     
-    private func setupTitleView() {
-        titleNaviView.frame = CGRect(x: 0, y: 0, width: 120, height: 40)
+    private func setupNavigationTitle(symbol: String, imageUrl: String) {
+        let stackView = UIStackView()
+        stackView.axis = .horizontal
+        stackView.alignment = .center
+        stackView.spacing = 8
         
-        titleNaviImageView.frame = CGRect(x: 10, y: 7, width: 26, height: 26)
-        titleNaviImageView.contentMode = .scaleAspectFit
-        titleNaviImageView.clipsToBounds = true
-        titleNaviImageView.layer.cornerRadius = 13
+        let coinImageView = UIImageView()
+        coinImageView.contentMode = .scaleAspectFit
+        coinImageView.clipsToBounds = true
+        coinImageView.layer.cornerRadius = 12
+        coinImageView.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            coinImageView.widthAnchor.constraint(equalToConstant: 24),
+            coinImageView.heightAnchor.constraint(equalToConstant: 24)
+        ])
         
-        titleNaviLabel.frame = CGRect(x: 40, y: 10, width: 80, height: 20)
-        titleNaviLabel.font = .systemFont(ofSize: 18, weight: .bold)
-        titleNaviLabel.textColor = .brBlack
+        let symbolLabel = UILabel()
+        symbolLabel.text = symbol
+        symbolLabel.font = .systemFont(ofSize: 18, weight: .bold)
+        symbolLabel.textColor = .brBlack
         
-        titleNaviView.addSubview(titleNaviImageView)
-        titleNaviView.addSubview(titleNaviLabel)
+        if let url = URL(string: imageUrl) {
+            coinImageView.kf.setImage(with: url, placeholder: UIImage(systemName: "questionmark.circle"))
+        } else {
+            coinImageView.image = UIImage(systemName: "questionmark.circle")
+        }
         
-        navigationItem.titleView = titleNaviView
+        stackView.addArrangedSubview(coinImageView)
+        stackView.addArrangedSubview(symbolLabel)
+        
+        navigationItem.titleView = stackView
     }
-    
     @objc private func backButtonTapped() {
         navigationController?.popViewController(animated: true)
     }
     
-    override func configureHierarchy() {
-        view.addSubview(scrollView)
-        scrollView.addSubview(contentView)
-        
-    
-    }
-    
-    override func configureLayout() {
-        scrollView.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
-        }
-        
-        contentView.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
-            make.width.equalTo(view)
-        }
-    }
-    
-    override func configureView() {
-        view.backgroundColor = .white
-        scrollView.showsVerticalScrollIndicator = false
-    
-        updateUI()
-    }
-
-    private func updateFavoriteButton() {
-        let isFavorite = FavoriteManager.shared.isFavorite(coinId: coinId)
-        let imageName = isFavorite ? Constants.Icon.starFill : Constants.Icon.star
-        navigationItem.rightBarButtonItem?.image = UIImage(systemName: imageName)
-        navigationItem.rightBarButtonItem?.tintColor = .brBlack
-    }
-    
     @objc private func favoriteButtonTapped() {
-        let isAdded = FavoriteManager.shared.toggleFavorite(
-            coinId: coinId,
-            name: coinName
-        )
-        
-        updateFavoriteButton()
-        let message = isAdded ?
-            "\(coinName)이 즐겨찾기 되었습니다" :
-            "\(coinName)이 즐겨찾기에서 제거 되었습니다"
+        favoriteButtonTappedRelay.accept(())
+    }
     
-        showToast(message: message)
+    @objc private func moreButtonTapped() {
+        moreButtonTappedRelay.accept(())
     }
     
     override func bind() {
-        FavoriteManager.shared.favoritesChanged
-            .subscribe(onNext: { [weak self] in
-                self?.updateFavoriteButton()
+        let input = CoinDetailViewModel.Input(
+            viewDidLoad: Observable.just(()),
+            viewWillAppear: viewWillAppearRelay,
+            favoriteButtonTapped: favoriteButtonTappedRelay,
+            moreButtonTapped: moreButtonTappedRelay
+        )
+        
+        let output = viewModel.transform(input: input)
+        
+        output.coinDetail
+            .drive(onNext: { [weak self] coinDetail in
+                guard let self = self, let coinDetail = coinDetail else { return }
+                self.updateUI(with: coinDetail)
             })
             .disposed(by: disposeBag)
+        
+        output.isLoading
+            .drive(onNext: { [weak self] isLoading in
+                self?.mainView.showLoading(isLoading)
+            })
+            .disposed(by: disposeBag)
+        
+        output.error
+            .drive(onNext: { [weak self] error in
+                self?.showErrorAlert(message: error.message)
+            })
+            .disposed(by: disposeBag)
+
+        output.message
+            .drive(onNext: { [weak self] message in
+                self?.showToast(message: message)
+            })
+            .disposed(by: disposeBag)
+        
+        output.isFavorite
+            .drive(onNext: { [weak self] isFavorite in
+                let imageName = isFavorite ? Constants.Icon.starFill : Constants.Icon.star
+                self?.navigationItem.rightBarButtonItem?.image = UIImage(systemName: imageName)
+            })
+            .disposed(by: disposeBag)
+        
+        mainView.stockInfoMoreButton.rx.tap
+            .bind(to: moreButtonTappedRelay)
+            .disposed(by: disposeBag)
+        
+        mainView.indicatorMoreButton.rx.tap
+            .bind(to: moreButtonTappedRelay)
+            .disposed(by: disposeBag)
     }
+    
+    
+    
+    private func updateUI(with coinDetail: CoinDetail) {
+        mainView.priceLabel.text = "₩\(Int(coinDetail.currentPrice).formatted())"
+            
+            if let changePercentage = coinDetail.priceChangePercentage24h {
+                let formattedPercentage = NumberFormatterUtil.formatPercentage(changePercentage)
+                
+                if changePercentage > 0 {
+                    mainView.changePercentageLabel.text = "▲ \(formattedPercentage)%"
+                    mainView.changePercentageLabel.textColor = .systemRed
+                } else if changePercentage < 0 {
+                    mainView.changePercentageLabel.text = "▼ \(formattedPercentage)%"
+                    mainView.changePercentageLabel.textColor = .systemBlue
+                } else {
+                    mainView.changePercentageLabel.text = "\(formattedPercentage)%"
+                    mainView.changePercentageLabel.textColor = .black
+                }
+            }
+        
+            if let sparklineData = coinDetail.sparklineIn7d?.price, !sparklineData.isEmpty {
+                mainView.configureChart(with: sparklineData)
+            }
+            
+            mainView.updateTimeLabel.text = Date().toFormattedUpdateString()
+            
+            mainView.high24hValueLabel.text = "₩\(Int(coinDetail.high24h ?? 0).formatted())"
+            mainView.low24hValueLabel.text = "₩\(Int(coinDetail.low24h ?? 0).formatted())"
+            
+            if let ath = coinDetail.ath, let athDate = coinDetail.athDate {
+                mainView.athValueLabel.text = "₩\(Int(ath).formatted())"
+                mainView.athDate.text = "\(athDate.toFormattedDate())"
+            }
+            
+            if let atl = coinDetail.atl, let atlDate = coinDetail.atlDate {
+                mainView.atlValueLabel.text = "₩\(Int(atl).formatted())"
+                mainView.atlDate.text = "\(atlDate.toFormattedDate())"
+            }
+            
+            mainView.marketCapValueLabel.text = "₩\(Int(coinDetail.marketCap ?? 0).formatted())"
+            mainView.fdvValueLabel.text = "₩\(Int(coinDetail.fullyDilutedValuation ?? 0).formatted())"
+            mainView.totalVolumeValueLabel.text = "₩\(Int(coinDetail.totalVolume ?? 0).formatted())"
+        }
 }

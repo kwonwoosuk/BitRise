@@ -16,6 +16,7 @@ class BaseViewController: UIViewController {
         configureLayout()
         configureView()
         bind()
+        setupKeyboardDismissGesture()
     }
     
     func configureHierarchy() { }
@@ -25,5 +26,15 @@ class BaseViewController: UIViewController {
     func configureView() { }
     
     func bind() { }
-     
+    
+    
+    func setupKeyboardDismissGesture() {
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
+        tapGesture.cancelsTouchesInView = false
+        view.addGestureRecognizer(tapGesture)
+    }
+    
+    @objc func dismissKeyboard() {
+        view.endEditing(true)
+    }
 }

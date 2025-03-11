@@ -41,8 +41,6 @@ final class TrendingViewController: BaseViewController {
         
         mainView.nftsCollectionView.dataSource = self
         mainView.nftsCollectionView.delegate = self
-        mainView.coinsCollectionView.keyboardDismissMode = .onDrag
-        mainView.nftsCollectionView.keyboardDismissMode = .onDrag
     }
     
     override func bind() {
@@ -165,11 +163,18 @@ extension TrendingViewController: UICollectionViewDelegate {
             let coins = viewModel.getCurrentTrendingCoins()
             if indexPath.item < coins.count {
                 let selectedCoin = coins[indexPath.item]
-                print("선택된 코인: \(selectedCoin.name)")
+                let searchCoin = SearchCoin(
+                    id: selectedCoin.id,
+                    name: selectedCoin.name,
+                    symbol: selectedCoin.symbol,
+                    marketCapRank: nil,
+                    thumb: selectedCoin.thumb,
+                    large: selectedCoin.thumb
+                )
                 
-                let vc = CoinDetailViewController()
-                vc.navigationItem.title = selectedCoin.symbol
-                navigationController?.pushViewController(vc, animated: true)
+                let detailVC = CoinDetailViewController()
+                detailVC.configure(with: searchCoin)
+                navigationController?.pushViewController(detailVC, animated: true)
             }
         } else if collectionView == mainView.nftsCollectionView {
             return

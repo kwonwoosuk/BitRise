@@ -162,6 +162,54 @@ final class NetworkManager {
             }
         }
     }
+    func fetchCoinDetail(id: String) -> Single<Result<[CoinDetail], APIError>> {
+            return Single.create { [weak self] single in
+                guard let self = self else {
+                    single(.success(.failure(APIError.unknownError)))
+                    return Disposables.create()
+                }
+                
+                guard let url = URL(string: APIURL.coinGeckoDetailURL(coinId: id)) else {
+                    single(.success(.failure(APIError.invalidURL)))
+                    return Disposables.create()
+                }
+                
+                AF.request(url, method: .get)
+                    .validate(statusCode: 200..<300)
+                    .responseDecodable(of: [CoinDetail].self) { response in
+                        switch response.result {
+                        case .success(let data):
+                            print("코인 상세 데이터 성공: \(data.first?.name ?? "Unknown")")
+                            single(.success(.success(data)))
+                            
+                        case .failure(let error):
+                            print("코인 상세 데이터 실패: \(error)")
+                            
+                            let statusCode = response.response?.statusCode
+                            switch statusCode {
+                            case 400:
+                                single(.success(.failure(APIError.coinGeckoError(.badRequest))))
+                            case 401:
+                                single(.success(.failure(APIError.coinGeckoError(.unauthorized))))
+                            case 403:
+                                single(.success(.failure(APIError.coinGeckoError(.forbidden))))
+                            case 404:
+                                single(.success(.failure(APIError.invalidURL)))
+                            case 429:
+                                single(.success(.failure(APIError.callLimitExceeded)))
+                            case 500:
+                                single(.success(.failure(APIError.coinGeckoError(.serverError))))
+                            case 503:
+                                single(.success(.failure(APIError.coinGeckoError(.serviceUnavailable))))
+                            default:
+                                single(.success(.failure(APIError.unknownError)))
+                            }
+                        }
+                    }
+                
+                return Disposables.create()
+            }
+        }
     
     
 }

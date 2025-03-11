@@ -41,6 +41,7 @@ final class SearchCoinView: BaseView {
         tableView.separatorStyle = .none
         tableView.separatorInset = UIEdgeInsets(top: 0, left: 16, bottom: 0, right: 16)
         tableView.tableFooterView = UIView()
+        tableView.keyboardDismissMode = .onDrag
         
         emptyStateLabel.text = "검색어를 입력해주세요."
         emptyStateLabel.font = .systemFont(ofSize: 16)

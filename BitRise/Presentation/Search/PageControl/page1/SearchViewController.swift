@@ -37,7 +37,6 @@ final class SearchViewController: BaseViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        
         if let query = initialSearchQuery, !query.isEmpty && navigationController?.viewControllers.count != 1 {
             searchBar.text = query
             callRequest(query: query)
@@ -193,13 +192,14 @@ final class SearchViewController: BaseViewController {
         
         searchBar.rx.searchButtonClicked
             .withLatestFrom(searchBar.rx.text)
-            .filter { query in
-                guard let query = query else { return false }
-                return !query.trimmingCharacters(in: .whitespaces).isEmpty
-            }
             .subscribe(onNext: { [weak self] query in
-                guard let query = query else { return }
-                self?.callRequest(query: query)
+                guard let self = self else { return }
+                
+                if let query = query, !query.trimmingCharacters(in: .whitespaces).isEmpty {
+                    self.callRequest(query: query)
+                } else {
+                    self.searchBar.resignFirstResponder()
+                }
             })
             .disposed(by: disposeBag)
         

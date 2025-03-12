@@ -34,6 +34,7 @@ final class SearchViewController: BaseViewController, UIGestureRecognizerDelegat
         setupNavigationBar()
         setupPageViewController()
         navigationController?.interactivePopGestureRecognizer?.delegate = self
+        self.navigationController?.interactivePopGestureRecognizer?.isEnabled = true
     }
     
     override func viewDidAppear(_ animated: Bool) {

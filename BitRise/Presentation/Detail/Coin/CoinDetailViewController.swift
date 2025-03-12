@@ -11,7 +11,7 @@ import RxSwift
 import RxCocoa
 import Kingfisher
 
-final class CoinDetailViewController: BaseViewController, UIGestureRecognizerDelegate {
+final class CoinDetailViewController: BaseViewController {
     
     private let mainView = CoinDetailView()
     private let viewModel = CoinDetailViewModel()
@@ -98,6 +98,7 @@ final class CoinDetailViewController: BaseViewController, UIGestureRecognizerDel
         stackView.addArrangedSubview(coinImageView)
         stackView.addArrangedSubview(symbolLabel)
         navigationController?.interactivePopGestureRecognizer?.delegate = self
+        navigationController?.interactivePopGestureRecognizer?.isEnabled = true
         navigationItem.titleView = stackView
     }
     @objc private func backButtonTapped() {
@@ -163,7 +164,9 @@ final class CoinDetailViewController: BaseViewController, UIGestureRecognizerDel
             .disposed(by: disposeBag)
     }
     
-    
+    deinit {
+        print("deinit됨")
+    }
     
     private func updateUI(with coinDetail: CoinDetail) {
         mainView.priceLabel.text = "₩\(Int(coinDetail.currentPrice).formatted())"
@@ -206,4 +209,10 @@ final class CoinDetailViewController: BaseViewController, UIGestureRecognizerDel
             mainView.fdvValueLabel.text = "₩\(Int(coinDetail.fullyDilutedValuation ?? 0).formatted())"
             mainView.totalVolumeValueLabel.text = "₩\(Int(coinDetail.totalVolume ?? 0).formatted())"
         }
+}
+extension CoinDetailViewController: UIGestureRecognizerDelegate {
+    func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
+        // 네비게이션 스택에 뷰 컨트롤러가 2개 이상이어야 동작하도록 설정
+        return navigationController?.viewControllers.count ?? 0 > 1
+    }
 }

@@ -24,17 +24,18 @@ enum SortOrder {
 final class ExchangeViewModel: BaseViewModel {
     
     var disposeBag = DisposeBag()
-    private var timerDisposable: Disposable?
     
     private let networkManager = NetworkManager.shared
+    private let webSocketManager = WebSocketManager.shared
+    
     private let tickersRelay = BehaviorRelay<[UpbitTicker]>(value: [])
+    private let realtimeUpdateRelay = PublishRelay<UpbitTicker>()
     private let sortTypeRelay = BehaviorRelay<SortType?>(value: nil)
     private let sortOrderRelay = BehaviorRelay<SortOrder>(value: .none)
     private let errorRelay = BehaviorRelay<APIError?>(value: nil)
     
     struct Input {
         let viewDidLoad: Observable<Void>
-        let timerTrigger: Observable<Void>
         let currentPriceSortTap: ControlEvent<Void>
         let changeRateSortTap: ControlEvent<Void>
         let tradePriceSortTap: ControlEvent<Void>
@@ -42,49 +43,53 @@ final class ExchangeViewModel: BaseViewModel {
     
     struct Output {
         let tickers: Driver<[UpbitTicker]>
+        let realtimeUpdate: Driver<UpbitTicker>
         let error: Driver<APIError?>
         let sortType: Driver<SortType?>
         let sortOrder: Driver<SortOrder>
+        let isConnected: Driver<Bool>
     }
     
     init() {
-        // ViewModel 초기화
+        setupWebSocket()
     }
     
     deinit {
-        print("⭐️exchange 뷰모델 DEINIT됨⭐️")
+        print("⭐️ExchangeViewModel DEINIT⭐️")
+        webSocketManager.disconnect()
+    }
+    
+    private func setupWebSocket() {
+        // WebSocket 실시간 데이터 수신
+        webSocketManager.tickerObservable
+            .subscribe(onNext: { [weak self] ticker in
+                self?.updateTicker(ticker)
+                self?.realtimeUpdateRelay.accept(ticker)
+            })
+            .disposed(by: disposeBag)
     }
     
     func transform(input: Input) -> Output {
+        
         input.viewDidLoad
             .subscribe(onNext: { [weak self] in
-                self?.fetchTickers()
-            })
-            .disposed(by: disposeBag)
-        
-        // 타이머
-        input.timerTrigger
-            .subscribe(onNext: { [weak self] in
-                self?.fetchTickers()
+                self?.loadInitialData()
             })
             .disposed(by: disposeBag)
         
         input.currentPriceSortTap
-            .debug("현재가 탭")
             .subscribe(onNext: { [weak self] in
                 self?.toggleSort(type: .currentPrice)
             })
             .disposed(by: disposeBag)
         
         input.changeRateSortTap
-            .debug("전일대비 탭")
             .subscribe(onNext: { [weak self] in
                 self?.toggleSort(type: .changeRate)
             })
             .disposed(by: disposeBag)
         
         input.tradePriceSortTap
-            .debug("거래대금 탭")
             .subscribe(onNext: { [weak self] in
                 self?.toggleSort(type: .tradePrice)
             })
@@ -92,47 +97,37 @@ final class ExchangeViewModel: BaseViewModel {
         
         return Output(
             tickers: tickersRelay.asDriver(),
+            realtimeUpdate: realtimeUpdateRelay.asDriver(onErrorJustReturn: UpbitTicker(market: "", change: "", tradePrice: 0, signedChangeRate: 0, signedChangePrice: 0, accTradePrice: 0)),
             error: errorRelay.asDriver(),
             sortType: sortTypeRelay.asDriver(),
-            sortOrder: sortOrderRelay.asDriver()
+            sortOrder: sortOrderRelay.asDriver(),
+            isConnected: webSocketManager.isConnected.asDriver(onErrorJustReturn: false)
         )
     }
     
-    func startTimer() {
-        stopTimer() // 기존타이머 dispose
-        
-        timerDisposable = Observable<Int>.interval(.seconds(5), scheduler: MainScheduler.instance)
-            .bind(onNext: { [weak self] _ in
-                //                print("타이머 실행됨")
-                self?.fetchTickers()
-            })
+    func startWebSocket() {
+        webSocketManager.connect()
     }
     
-    func stopTimer() {
-        timerDisposable?.dispose()
-        timerDisposable = nil
-        //        print("timer dispoe됨")
+    func stopWebSocket() {
+        webSocketManager.disconnect()
     }
     
-    private func fetchTickers() {
+    private func loadInitialData() {
         networkManager.fetchAllKRWTickers()
             .subscribe(
                 onSuccess: { [weak self] tickers in
                     guard let self = self else { return }
                     
                     self.errorRelay.accept(nil)
-                    // 현재 정렬 상태를 유지하면서 새 데이터 적용
-                    let currentSortType = self.sortTypeRelay.value
-                    let currentSortOrder = self.sortOrderRelay.value
                     
-                    if let sortType = currentSortType, currentSortOrder != .none {
-                        // 현재 정렬 기준이 있으면 그대로 적용
-                        self.applySorting(tickers: tickers, type: sortType, ascending: currentSortOrder == .ascending)
-                    } else {
-                        // 정렬 기준이 없거나 .none이면 기본 정렬 (거래대금 내림차순) 적용
-                        // API에서 이미 거래대금 내림차순으로 주지만, 명시적으로 정렬 적용
-                        let sortedTickers = self.sortByTradePrice(tickers: tickers, ascending: false)
-                        self.tickersRelay.accept(sortedTickers)
+                    // 기본 정렬 (거래대금 내림차순)
+                    let sortedTickers = self.sortByTradePrice(tickers: tickers, ascending: false)
+                    self.tickersRelay.accept(sortedTickers)
+                    
+                    // REST API 데이터 로딩 완료 후 WebSocket 연결
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                        self.startWebSocket()
                     }
                 },
                 onFailure: { [weak self] error in
@@ -144,6 +139,25 @@ final class ExchangeViewModel: BaseViewModel {
             .disposed(by: disposeBag)
     }
     
+    private func updateTicker(_ newTicker: UpbitTicker) {
+        var currentTickers = tickersRelay.value
+        
+        // 해당 마켓 찾아서 업데이트
+        if let index = currentTickers.firstIndex(where: { $0.market == newTicker.market }) {
+            currentTickers[index] = newTicker
+            
+            // 현재 정렬 유지
+            let currentSortType = sortTypeRelay.value
+            let currentSortOrder = sortOrderRelay.value
+            
+            if let sortType = currentSortType, currentSortOrder != .none {
+                applySorting(tickers: currentTickers, type: sortType, ascending: currentSortOrder == .ascending)
+            } else {
+                tickersRelay.accept(currentTickers)
+            }
+        }
+    }
+    
     private func toggleSort(type: SortType) {
         let currentType = sortTypeRelay.value
         let currentOrder = sortOrderRelay.value
@@ -151,27 +165,20 @@ final class ExchangeViewModel: BaseViewModel {
         if currentType == type {
             switch currentOrder {
             case .none:
-                // 선택 안 됨 -> 내림차순
                 sortOrderRelay.accept(.descending)
                 sortTypeRelay.accept(type)
                 applySorting(tickers: tickersRelay.value, type: type, ascending: false)
-                
             case .descending:
-                // 내림차순 -> 오름차순
                 sortOrderRelay.accept(.ascending)
                 sortTypeRelay.accept(type)
                 applySorting(tickers: tickersRelay.value, type: type, ascending: true)
-                
             case .ascending:
-                // 오름차순 -> 선택 안 됨 (정렬 해제)
                 sortOrderRelay.accept(.none)
                 sortTypeRelay.accept(nil)
-                // 정렬 해제 시 기본 정렬 (거래대금 내림차순)
                 let sortedTickers = sortByTradePrice(tickers: tickersRelay.value, ascending: false)
                 tickersRelay.accept(sortedTickers)
             }
         } else {
-            // 새로운 정렬 기준 선택
             sortTypeRelay.accept(type)
             sortOrderRelay.accept(.descending)
             applySorting(tickers: tickersRelay.value, type: type, ascending: false)
@@ -186,12 +193,10 @@ final class ExchangeViewModel: BaseViewModel {
             sortedTickers = tickers.sorted { ticker1, ticker2 in
                 return ascending ? ticker1.tradePrice < ticker2.tradePrice : ticker1.tradePrice > ticker2.tradePrice
             }
-            
         case .changeRate:
             sortedTickers = tickers.sorted { ticker1, ticker2 in
                 return ascending ? ticker1.signedChangeRate < ticker2.signedChangeRate : ticker1.signedChangeRate > ticker2.signedChangeRate
             }
-            
         case .tradePrice:
             sortedTickers = sortByTradePrice(tickers: tickers, ascending: ascending)
         }

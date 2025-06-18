@@ -14,6 +14,9 @@ final class ExchangeViewController: BaseViewController {
     private let mainView = ExchangeView()
     private let viewModel = ExchangeViewModel()
     private let disposeBag = DisposeBag()
+    
+    private var currentTickers: [UpbitTicker] = []
+    
     override func loadView() {
         view = mainView
     }
@@ -26,17 +29,15 @@ final class ExchangeViewController: BaseViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        //콜을 동시에 해줄까 하다가 사용자가 미친듯이 탭전환해서 요청수가 많으면... 근데 초당 30회 인거같은데 
-        viewModel.startTimer()
+        viewModel.startWebSocket()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        viewModel.stopTimer()
+        viewModel.stopWebSocket()
     }
     
     private func setupNavigationBar() {
-        
         let naviLabel = UILabel()
         naviLabel.text = "거래소"
         naviLabel.font = .systemFont(ofSize: 18, weight: .heavy)
@@ -48,36 +49,36 @@ final class ExchangeViewController: BaseViewController {
     
     private func setupTableView() {
         mainView.tableView.register(ExchangeTableViewCell.self, forCellReuseIdentifier: ExchangeTableViewCell.identifier)
+        mainView.tableView.dataSource = self
+        mainView.tableView.delegate = self
     }
     
     override func bind() {
-        let viewDidLoadTrigger = Observable.just(())
-        
-        let emptyTimer = Observable<Void>.create { observer in
-            return Disposables.create {
-                print("타이머 Observable Disposed ")
-            }
-        }
-        
-        let currentPriceSortTap = mainView.currentPriceSortButton.rx.tap
-        let changeRateSortTap = mainView.changeRateSortButton.rx.tap
-        let tradePriceSortTap = mainView.tradePriceSortButton.rx.tap
-        
         let input = ExchangeViewModel.Input(
-            viewDidLoad: viewDidLoadTrigger,
-            timerTrigger: emptyTimer,
-            currentPriceSortTap: currentPriceSortTap,
-            changeRateSortTap: changeRateSortTap,
-            tradePriceSortTap: tradePriceSortTap
+            viewDidLoad: Observable.just(()),
+            currentPriceSortTap: mainView.currentPriceSortButton.rx.tap,
+            changeRateSortTap: mainView.changeRateSortButton.rx.tap,
+            tradePriceSortTap: mainView.tradePriceSortButton.rx.tap
         )
+        
         let output = viewModel.transform(input: input)
         
+        // 전체 데이터 업데이트
         output.tickers
-            .drive(mainView.tableView.rx.items(cellIdentifier: ExchangeTableViewCell.identifier, cellType: ExchangeTableViewCell.self)) { _, element, cell in
-                cell.configure(with: element)
-            }
+            .drive(onNext: { [weak self] tickers in
+                self?.currentTickers = tickers
+                self?.mainView.tableView.reloadData()
+            })
             .disposed(by: disposeBag)
         
+        // 실시간 개별 업데이트
+        output.realtimeUpdate
+            .drive(onNext: { [weak self] ticker in
+                self?.updateCell(with: ticker)
+            })
+            .disposed(by: disposeBag)
+        
+        // 에러 처리
         output.error
             .drive(onNext: { [weak self] error in
                 if let error = error {
@@ -86,16 +87,53 @@ final class ExchangeViewController: BaseViewController {
             })
             .disposed(by: disposeBag)
         
-        
-        Driver.combineLatest(output.sortType, output.sortOrder)
-            .drive(onNext: { [weak self] sortType, sortOrder in
-                self?.updateSortButtonsUI(sortType: sortType, sortOrder: sortOrder)
+        // 연결 상태 표시
+        output.isConnected
+            .drive(onNext: { [weak self] isConnected in
+                self?.updateConnectionStatus(isConnected: isConnected)
             })
             .disposed(by: disposeBag)
         
+        // 정렬 버튼 UI 업데이트
+        Driver.combineLatest(output.sortType, output.sortOrder)
+            .drive(onNext: { [weak self] sortType, sortOrder in
+                self?.updateSortButtons(sortType: sortType, sortOrder: sortOrder)
+            })
+            .disposed(by: disposeBag)
     }
     
-    private func updateSortButtonsUI(sortType: SortType?, sortOrder: SortOrder) {
+    private func updateCell(with ticker: UpbitTicker) {
+        guard let index = currentTickers.firstIndex(where: { $0.market == ticker.market }) else {
+            return
+        }
+        
+        // 데이터 업데이트
+        currentTickers[index] = ticker
+        
+        // 해당 셀만 애니메이션과 함께 업데이트
+        let indexPath = IndexPath(row: index, section: 0)
+        
+        if let cell = mainView.tableView.cellForRow(at: indexPath) as? ExchangeTableViewCell {
+            cell.configure(with: ticker, animated: true)
+        }
+    }
+    
+    private func updateConnectionStatus(isConnected: Bool) {
+        DispatchQueue.main.async {
+            let imageName = isConnected ? "wifi" : "wifi.slash"
+            let color: UIColor = isConnected ? .systemGreen : .systemRed
+            
+            self.navigationItem.rightBarButtonItem = UIBarButtonItem(
+                image: UIImage(systemName: imageName),
+                style: .plain,
+                target: nil,
+                action: nil
+            )
+            self.navigationItem.rightBarButtonItem?.tintColor = color
+        }
+    }
+    
+    private func updateSortButtons(sortType: SortType?, sortOrder: SortOrder) {
         mainView.currentPriceSortButton.sortOrder = .none
         mainView.changeRateSortButton.sortOrder = .none
         mainView.tradePriceSortButton.sortOrder = .none
@@ -111,7 +149,26 @@ final class ExchangeViewController: BaseViewController {
             mainView.tradePriceSortButton.sortOrder = sortOrder
         }
     }
-  
+}
+
+// MARK: - TableView DataSource & Delegate
+extension ExchangeViewController: UITableViewDataSource, UITableViewDelegate {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return currentTickers.count
+    }
     
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: ExchangeTableViewCell.identifier, for: indexPath) as? ExchangeTableViewCell else {
+            return UITableViewCell()
+        }
+        
+        let ticker = currentTickers[indexPath.row]
+        cell.configure(with: ticker, animated: false)
+        
+        return cell
+    }
     
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+    }
 }
